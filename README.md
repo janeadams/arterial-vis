@@ -14,7 +14,9 @@ We recommend using a virtual environment to keep packages organized. There are t
 ### Setting up a virtual environment with `conda`
 
 Set up your virtual environment with:
-`conda create --name $ENV_NAME -f environment.yml`
+`conda create --name $ENV_NAME -f environment.yml python=3.8.3`
+
+**Note:** *There is a known issue with iPyVolume in Python 3.10; we are using Python 3.8.3 because it appears to be stable.*
 
 Activate the environment with:
 `conda activate $ENV_NAME`
@@ -32,6 +34,19 @@ Set up your virtual environment with:
 
 Activate the environment with:
 `source $ENV_DIR/bin/activate`
+
+### Setting up Jupyter Notebooks to support iPyVolume
+
+In order to render volumes in Jupyter Noteboks, you will also need to run:
+`jupyter nbextension enable --py --sys-prefix ipyvolume
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+jupyter labextension install ipyvolume
+jupyter labextension install jupyter-threejs`
+
+If you do not see any output from iPyVolume, you can check your notebook extensions with `jupyter nbextension list` or use the developer tools console in the browser to debug.
+
+If you are still having trouble rendering volumes, check the iPyVolume install documentation [here](https://ipyvolume.readthedocs.io/en/latest/install.html).
 
 ## Downloading sample data
 
@@ -60,7 +75,9 @@ To download the default neurimaging data, use:
 
 ### Custom data
 Specify a custom URL and/or save path with:
-`download.download_zip(zip_path=$URL, save_path=$NEW_LOCAL_DIRNAME)`
+`download.download_zip(
+    zip_path = $URL,
+    save_path = $NEW_LOCAL_DIRNAME)`
 
 ## <a name="imaging"></a>Imaging & Segmentation Module
 

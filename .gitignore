@@ -1,3 +1,4 @@
+output/
 dicom_files/
 swc_files/
 *.html
