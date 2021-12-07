@@ -6,3 +6,5 @@ swc_files/
 *.swc
 *.zip
 .ipynb_checkpoints
+__pycache__
+*.pyc
