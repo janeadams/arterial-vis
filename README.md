@@ -53,7 +53,7 @@ To download the default neuromorphology data, use:
 `fetch.download_swc()`
 
 ### Neuroimaging
-For image rendering and segmentation, we use an MRI DICOM data set of the head of a normal male human aged 52 provided by the Radiology Department at the Macclesfield General Hospital and documented [here](https://zenodo.org/record/16956). *Note that this workflow is incomplete and exists only to show the initial research steps towards segmentation and extraction of neuromorphology. You can skip ahead to README instructions for morphology and graphing [here](#graphing).*
+For image rendering and segmentation, we use an MRI DICOM data set provided by the Radiology Department at the Macclesfield General Hospital documented [here](https://zenodo.org/record/16956).
 
 To download the default neurimaging data, use:
 `download.download_dicom()`
@@ -64,7 +64,7 @@ Specify a custom URL and/or save path with:
 
 ## <a name="imaging"></a>Imaging & Segmentation Module
 
-**Note:** *This portion of the library is incomplete.* Functions exist for reading, clustering, masking, removing islands, and rendering volumes. Because masking and island removal alone are insufficient for acceptable segmentation, functions do not yet exist for centerline extraction and exporting of morphology. Please refer to the following section, "Morphology", for 2D embedding of morphological structures from pre-existing segmented and morphologized data from [BraVa](http://cng.gmu.edu/brava/home.php).
+**Note:** *This portion of the library is incomplete.* Functions exist for reading, clustering, masking, removing islands, and rendering volumes. Because masking and island removal alone are insufficient for acceptable segmentation, functions do not yet exist for centerline extraction and exporting of morphology. Please refer to the following section, "Morphology", for 2D embedding of morphological structures from pre-existing segmented and morphologized data from [BraVa](http://cng.gmu.edu/brava/home.php). You can skip ahead to README instructions for morphology and graphing [here](#graphing).
 
 The ArterialVis imaging and segmentation workflow is designed to use DICOM images. By convention, DICOM images are stored in directories, where each sequentially enumerated image corresponds to an adjacent slice in the brain. ArterialVis reads DICOM images into 3D arrays, wherein the first level of the array corresponds to each slice, and the subsequent two levels correspond to the X and Y coordinates of each image.
 

@@ -1,4 +1,4 @@
-from arterialvis import fetch
-fetch.download_swc()
-fetch.download_dicom()
-fetch.append_dcm()
+from arterialvis import download
+download.download_swc()
+download.download_dicom()
+download.append_dcm()
