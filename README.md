@@ -19,10 +19,10 @@ Set up your virtual environment with:
 **Note:** *There is a known issue with iPyVolume in Python 3.10; we are using Python 3.8.3 because it appears to be stable.*
 
 Activate the environment with:
-`conda activate $ENV_NAME`
+`conda activate arterialenv`
 
 In order to view your virtual environment in Jupyter Notebooks:
-`python -m ipykernel install --user --name $ENV_NAME --display-name "Virtual environment"`
+`python -m ipykernel install --user --name arterialenv --display-name "Virtual environment"`
 
 ### OR: Setting up a virtual environment with `venv` and `pip`
 
@@ -30,23 +30,18 @@ If you haven't already, install `venv` with:
 `pip install virtualenv`
 
 Set up your virtual environment with:
-`python -m venv $ENV_DIR`
+`python -m venv arterialenv`
 
 Activate the environment with:
-`source $ENV_DIR/bin/activate`
+`source arterialenv/bin/activate`
 
 ### Setting up Jupyter Notebooks to support iPyVolume
 
-In order to render volumes in Jupyter Noteboks, you may also need to run:
-
+In order to render volumes in Jupyter Noteboks, you will also need to run:
 `jupyter nbextension enable --py --sys-prefix ipyvolume`
-
 `jupyter nbextension enable --py --sys-prefix widgetsnbextension`
-
 `jupyter labextension install @jupyter-widgets/jupyterlab-manager`
-
 `jupyter labextension install ipyvolume`
-
 `jupyter labextension install jupyter-threejs`
 
 If you do not see any output from iPyVolume, you can check your notebook extensions with `jupyter nbextension list` or use the developer tools console in the browser to debug.
@@ -62,7 +57,16 @@ To download and unzip web-hosted data from a custom zip route and/or save path, 
 All data processing functions are stored in `arterialvis/download.py`.
 
 ### <a name="demodown"></a>Download all
-The functions to download neuroimaging and neuromorphology demo datasets, and append the ".dcm" file extension to the proper DICOM images in the neuroimaging dataset, are bundled together in the `import_data.py` file. To collect all necessary demo data, simply run `python import_data.py` from the command line inside the virtual environment.
+The functions to download neuroimaging and neuromorphology demo datasets, and append the ".dcm" file extension to the proper DICOM images in the neuroimaging dataset, are bundled together in the `import_data.py` file. To collect all necessary demo data, simply run `python download_sample_data.py` from the command line inside the virtual environment.
+
+**If you are having trouble downloading sample data using this method, you can also manually download the data using the information saved in the `.env` file:**
+
+|            | URL | Save Location |
+|------------|-----|---------------|
+| Imaging    |   [Zenodo](https://zenodo.org/record/16956/files/DICOM.zip)  | ./dicom_files/   |
+| Morphology |   [BraVa](http://cng.gmu.edu/brava/files/swc_files.zip)  | ./swc_files/     |
+
+or change the .env file accordingly.
 
 **NOTE:** *This is the only downloading step necessary in demo execution of this package. Continue on to README instructions for imaging and segmentation [here](#imaging) or morphology and graphing [here](#graphing).
 
@@ -80,22 +84,32 @@ To download the default neurimaging data, use:
 
 ### Custom data
 Specify a custom URL and/or save path with:
-`download.download_zip(
+```
+download.download_zip(
     zip_path = $URL,
-    save_path = $NEW_LOCAL_DIRNAME)`
+    save_path = $NEW_LOCAL_DIRNAME)
+```
 
 ## <a name="imaging"></a>Imaging & Segmentation Module
 
-**Note:** *This portion of the library is incomplete.* Functions exist for reading, clustering, masking, removing islands, and rendering volumes. Because masking and island removal alone are insufficient for acceptable segmentation, functions do not yet exist for centerline extraction and exporting of morphology. Please refer to the following section, "Morphology", for 2D embedding of morphological structures from pre-existing segmented and morphologized data from [BraVa](http://cng.gmu.edu/brava/home.php). You can skip ahead to README instructions for morphology and graphing [here](#graphing).
+**Note: This portion of the library is incomplete.** Functions exist for reading, clustering, masking, removing islands, and rendering volumes. Because masking and island removal alone are insufficient for acceptable segmentation, functions do not yet exist for centerline extraction and exporting of morphology. Please refer to the following section, "Morphology", for 2D embedding of morphological structures from pre-existing segmented and morphologized data from [BraVa](http://cng.gmu.edu/brava/home.php). You can skip ahead to README instructions for morphology and graphing [here](#graphing).
 
+### Data Format
 The ArterialVis imaging and segmentation workflow is designed to use DICOM images. By convention, DICOM images are stored in directories, where each sequentially enumerated image corresponds to an adjacent slice in the brain. ArterialVis reads DICOM images into 3D arrays, wherein the first level of the array corresponds to each slice, and the subsequent two levels correspond to the X and Y coordinates of each image.
 
+### Running the Notebook
+Ensuring your `arterialenv` environment is active, start Jupyter Notebooks with `jupyter notebook`
+
+### Module Structure
 All image processing and segmentation functions are stored in `arterialvis/imaging.py` and can be imported using `from arterialvis import imaging` to use the function call format `imaging.$FUNCTION()` or `from arterialvis.imaging import *` to import all functions and simply use the function call format `$FUNCTION()`.
 
+###Future Work
 Ultimately, the goal of the ArterialVis imaging and segmentation workflow is to convert DICOM image stacks (directories of `.dcm` files) into a single morphology file (ending in `*swc`).
 
 ## <a name="morphology"></a>Morphology & Graphing Module
 
+###Data Format
 The ArterialVis morphology and graphing module takes `*.swc` files as input, and outputs interactive interfaces for exploring 3D morphological structure and animation from 3D spatial positioning to 2D abstracted graph embedding using multiple layout algorithms.
 
+###Module Structure
 All morphological and graphing functions are stored in `arterialvis/morphology.py` and can be imported using `from arterialvis import morphology` to use the function call format `morphology.$FUNCTION()` or `from arterialvis.morphology import *` to import all functions and simply use the function call format `$FUNCTION()`.
