@@ -1,0 +1,8 @@
+dicom_files/
+swc_files/
+*.html
+.DS_Store*
+*.dcm
+*.swc
+*.zip
+.ipynb_checkpoints
