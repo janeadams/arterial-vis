@@ -15,8 +15,8 @@ def download_zip(zip_path, save_path, debug=True):
     """Download a zip file and extract into a directory
     
     Keyword arguments:
-    zip_path -- the web URL where the zip is located (default uses .env config 'SWC_SOURCE')
-    save_path -- the directory the unzipped files should be saved (default uses .env config 'SWC_SAVE')
+        zip_path -- the web URL where the zip is located (default uses .env config 'SWC_SOURCE')
+        save_path -- the directory the unzipped files should be saved (default uses .env config 'SWC_SAVE')
     """
     if debug:
         print(f'Downloading zip file from URL {zip_path} and unzipped to {save_path}')
@@ -39,8 +39,8 @@ def download_swc(zip_path=None, save_path=None, debug=True):
     """Download a zip file of neuromorphology (.swc files) and extract into a directory
     
     Keyword arguments:
-    zip_path -- the web URL where the zip is located (default uses .env config 'SWC_SOURCE')
-    save_path -- the directory the unzipped files should be saved (default uses .env config 'SWC_SAVE')
+        zip_path -- the web URL where the zip is located (default uses .env config 'SWC_SOURCE')
+        save_path -- the directory the unzipped files should be saved (default uses .env config 'SWC_SAVE')
     """
     if (zip_path==None) or (save_path==None):
         config = dotenv_values(".env")
@@ -55,8 +55,8 @@ def download_dicom(zip_path=None, save_path=None, debug=True):
     """Download a zip file of neuroimaging (.dcm files) and extract into a directory
     
     Keyword arguments:
-    zip_path -- the web URL where the zip is located (default uses .env config 'DICOM_SOURCE')
-    save_path -- the directory where the unzipped files should be saved (default uses .env config 'DICOM_SAVE')
+        zip_path -- the web URL where the zip is located (default uses .env config 'DICOM_SOURCE')
+        save_path -- the directory where the unzipped files should be saved (default uses .env config 'DICOM_SAVE')
     """
     if (zip_path==None) or (save_path==None):
         config = dotenv_values(".env")
@@ -72,7 +72,7 @@ def append_dcm(dicom_path=None, debug=True):
     (this is useful for some datasets which are exported without file extensions)
     
     Keyword arguments:
-    dicom_path -- the directory where the unzipped files are saved (default uses .env config 'DICOM_SAVE')
+        dicom_path -- the directory where the unzipped files are saved (default uses .env config 'DICOM_SAVE')
     """
     if dicom_path==None:
         config = dotenv_values(".env")
