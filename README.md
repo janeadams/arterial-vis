@@ -37,16 +37,17 @@ Activate the environment with:
 
 ### Setting up Jupyter Notebooks to support iPyVolume
 
-In order to render volumes in Jupyter Noteboks, you will also need to run:
-`jupyter nbextension enable --py --sys-prefix ipyvolume
+In order to render volumes in Jupyter Noteboks, you may also need to run:
 
-jupyter nbextension enable --py --sys-prefix widgetsnbextension
+`jupyter nbextension enable --py --sys-prefix ipyvolume`
 
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
+`jupyter nbextension enable --py --sys-prefix widgetsnbextension`
 
-jupyter labextension install ipyvolume
+`jupyter labextension install @jupyter-widgets/jupyterlab-manager`
 
-jupyter labextension install jupyter-threejs`
+`jupyter labextension install ipyvolume`
+
+`jupyter labextension install jupyter-threejs`
 
 If you do not see any output from iPyVolume, you can check your notebook extensions with `jupyter nbextension list` or use the developer tools console in the browser to debug.
 
