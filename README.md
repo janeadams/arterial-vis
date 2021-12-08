@@ -4,8 +4,8 @@
 
 There are two ends to this project which have yet to be connected: the first, to segment neuroimaging data and extract morphology; the second, to provide interactive animations for 2D graph embedding of the extracted 3D morphology. We include both halves of this workflow for documentary purposes, but the first half (segmentation) remains incomplete, while the pilot of the project and the focus of this repository uses pre-existing morphologized data for 2D embedding and interactive demonstration.
 
-Please note that at any time, you can access module descriptions by running
-`print($MODULE.__doc__)` or function descriptions with `print($FUNCTION.__doc__)`.
+Please note that at any time, you can access module and function descriptions by accessing the docstring using the format
+`print(<MODULE OR FUNCTION>.__doc__)`.
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ We recommend using a virtual environment to keep packages organized. There are t
 ### Setting up a virtual environment with `conda`
 
 Set up your virtual environment with:
-`conda create --name $ENV_NAME -f environment.yml python=3.8.3`
+`conda create --name arterialenv -f environment.yml python=3.8.3`
 
 **Note:** *There is a known issue with iPyVolume in Python 3.10; we are using Python 3.8.3 because it appears to be stable.*
 
@@ -22,7 +22,7 @@ Activate the environment with:
 `conda activate arterialenv`
 
 In order to view your virtual environment in Jupyter Notebooks:
-`python -m ipykernel install --user --name arterialenv --display-name "Virtual environment"`
+`python -m ipykernel install --user --name arterialenv --display-name "ArterialVis environment"`
 
 ### OR: Setting up a virtual environment with `venv` and `pip`
 
@@ -35,24 +35,12 @@ Set up your virtual environment with:
 Activate the environment with:
 `source arterialenv/bin/activate`
 
-### Setting up Jupyter Notebooks to support iPyVolume
-
-In order to render volumes in Jupyter Noteboks, you will also need to run:
-`jupyter nbextension enable --py --sys-prefix ipyvolume`
-`jupyter nbextension enable --py --sys-prefix widgetsnbextension`
-`jupyter labextension install @jupyter-widgets/jupyterlab-manager`
-`jupyter labextension install ipyvolume`
-`jupyter labextension install jupyter-threejs`
-
-If you do not see any output from iPyVolume, you can check your notebook extensions with `jupyter nbextension list` or use the developer tools console in the browser to debug.
-
-If you are still having trouble rendering volumes, check the iPyVolume install documentation [here](https://ipyvolume.readthedocs.io/en/latest/install.html).
 
 ## Downloading sample data
 
 For the purposes of demonstration, we use publicly available data, which can be downloaded using the steps described [here](#demodown).
 
-To download and unzip web-hosted data from a custom zip route and/or save path, use: `download.download_zip($ZIP_PATH, $SAVE_PATH)`.
+To download and unzip web-hosted data from a custom zip route and/or save path, use: `download.download_zip(<ZIP_PATH>, <SAVE_PATH>)`.
 
 All data processing functions are stored in `arterialvis/download.py`.
 
@@ -98,18 +86,18 @@ download.download_zip(
 The ArterialVis imaging and segmentation workflow is designed to use DICOM images. By convention, DICOM images are stored in directories, where each sequentially enumerated image corresponds to an adjacent slice in the brain. ArterialVis reads DICOM images into 3D arrays, wherein the first level of the array corresponds to each slice, and the subsequent two levels correspond to the X and Y coordinates of each image.
 
 ### Running the Notebook
-Ensuring your `arterialenv` environment is active, start Jupyter Notebooks with `jupyter notebook`
+Ensuring your `arterialenv` environment is active, start Jupyter Notebooks with `jupyter notebook`. Step through each cell to view outputs.
 
 ### Module Structure
-All image processing and segmentation functions are stored in `arterialvis/imaging.py` and can be imported using `from arterialvis import imaging` to use the function call format `imaging.$FUNCTION()` or `from arterialvis.imaging import *` to import all functions and simply use the function call format `$FUNCTION()`.
+All image processing and segmentation functions are stored in `arterialvis/imaging.py` and can be imported using `from arterialvis import imaging` to use the function call format `imaging.<FUNCTION>()` or `from arterialvis.imaging import *` to import all functions and simply use the function call format `<FUNCTION>()`.
 
-###Future Work
+### Future Work
 Ultimately, the goal of the ArterialVis imaging and segmentation workflow is to convert DICOM image stacks (directories of `.dcm` files) into a single morphology file (ending in `*swc`).
 
 ## <a name="morphology"></a>Morphology & Graphing Module
 
-###Data Format
+### Data Format
 The ArterialVis morphology and graphing module takes `*.swc` files as input, and outputs interactive interfaces for exploring 3D morphological structure and animation from 3D spatial positioning to 2D abstracted graph embedding using multiple layout algorithms.
 
-###Module Structure
-All morphological and graphing functions are stored in `arterialvis/morphology.py` and can be imported using `from arterialvis import morphology` to use the function call format `morphology.$FUNCTION()` or `from arterialvis.morphology import *` to import all functions and simply use the function call format `$FUNCTION()`.
+### Module Structure
+All morphological and graphing functions are stored in `arterialvis/morphology.py` and can be imported using `from arterialvis import morphology` to use the function call format `morphology.<FUNCTION>()` or `from arterialvis.morphology import *` to import all functions and simply use the function call format `<FUNCTION>()`.
