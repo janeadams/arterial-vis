@@ -2,6 +2,8 @@
 
 *Public-facing repository of work-in-progress library for image processing, segmentation, 3D to 2D network abstraction of cerebrovasculature, and interactive visualization of planar graph embedding for detection of neurological anomalies*
 
+![3D to 2D Animation Example](https://github.com/janeadams/arterial-vis/blob/main/documentation/full_graph_animation.gif?raw=true)
+
 There are two ends to this project which have yet to be connected: the first, to segment neuroimaging data and extract morphology; the second, to provide interactive animations for 2D graph embedding of the extracted 3D morphology. We include both halves of this workflow for documentary purposes, but the first half (segmentation) remains incomplete, while the pilot of the project and the focus of this repository uses pre-existing morphologized data for 2D embedding and interactive demonstration.
 
 Please note that at any time, you can access module and function descriptions by accessing the docstring using the format
