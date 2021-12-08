@@ -1,4 +1,34 @@
+"""Analytics, transformation, and rendering for visualization of morphology and network embedding
+
+Functions:
+    get_files -> array
+    filter_files -> array
+    
+    get_edgelist -> dataframe
+    generate_graph -> NetworkX graph object
+    convert_to_edgelist -> dataframe
+    simplifyGraph -> NetworkX graph object
+    
+    get_2d_positions -> tuple
+    get_2d_traces -> tuple
+    get_3d_traces -> tuple
+    
+    build_compund_graph -> Plotly figure object
+    build_grouped_graph -> Plotly figure object
+    build_comparison_dashboard
+    
+    normalize_series -> array of floats
+    
+    reimport_newXYZ -> dataframe
+    generate_inter_edgelist -> array of dataframes
+    
+    extract_real_abstract -> array of dataframes
+    build_animation -> Plotly figure object
+"""
+
+import os
 from os import walk
+from pathlib import Path
 from dotenv import dotenv_values
 import pandas as pd
 import plotly.express as px
@@ -6,19 +36,27 @@ import plotly.graph_objects as go
 import plotly.io as pio
 pio.templates
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output
 import networkx as nx
 import traceback
 from sklearn.preprocessing import normalize
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
 
 def get_files(path=None):
+    """Get a list of filenames from the location where .swc files are stored
+    
+    Keyword arguments:
+        path -- (str) (optional) where to search for files; if blank, use location specified in .env
+    
+    Returns: an array of filenames
+    """
     if (path==None):
         config = dotenv_values(".env")
-        path = config['SWC_SAVE']
+        path = Path(config['SWC_SAVE'])
     files = []
     for (dirpath, dirnames, filenames) in walk(path):
         files.extend(filenames)
@@ -26,6 +64,14 @@ def get_files(path=None):
     return files
 
 def filter_files(files, colored=True):
+    """Filter out only .swc files that are/are not colored from the sample data
+    
+    Keyword arguments:
+        files -- (array) a list of filenames
+        colored -- (bool) whether to include or exclude colored files
+    
+    Returns: An array of file names
+    """
     filtered_files = []
     for filename in files:
         if colored and ("ColorCoded" in filename):
@@ -35,16 +81,25 @@ def filter_files(files, colored=True):
     return filtered_files
 
 def get_edgelist(file, path=None, output=False):
+    """Extract an edgelist from the .swc morphology data
+    
+    Keyword arguments:
+        file -- (str) the name of the file to analyze
+        path -- (str or path) (optional) where to search for the file; if blank, use location specified in .env
+        output -- (str or path) (optional) where to cache
+    
+    Returns: Dataframe edgelist
+    """
     if output:
         try:
-            edgelist = pd.read_csv(output+'.csv')
+            edgelist = pd.read_csv(os.path.join(output,'edgelist.csv'))
             return edgelist
         except:
             pass
     if (path==None):
         config = dotenv_values(".env")
-        path = config['SWC_SAVE']
-    edgelist = pd.read_csv(path+'/'+file,
+        path = Path(config['SWC_SAVE'])
+    edgelist = pd.read_csv(os.path.join(path,file),
                      delim_whitespace=True,
                      header=None,
                      skiprows=1).rename(columns={0:'source',
@@ -54,33 +109,67 @@ def get_edgelist(file, path=None, output=False):
                                                  3:'y',
                                                  4:'z',
                                                  5:'length'})
-    if output: edgelist.to_csv(output+'.csv', index=False)
+    if output:
+        try: os.makedirs(output)
+        except: pass
+        edgelist.to_csv(os.path.join(output,'edgelist.csv'), index=False)
     return edgelist
 
 def generate_graph(edgelist, output=False):
+    """Generate a NetworkX graph from the edgelist
+    
+    Keyword arguments:
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        output -- (str or path) (optional) where to cache
+        
+    Returns: a NetworkX graph object
+    """
     if output:
+        try: os.makedirs(output)
+        except: pass
         try:
-            G = pd.read_pickle(output+'.pkl')
-            print(f'Found saved file at {output}.pkl')
+            G = pd.read_pickle(os.path.join(output,'graph.pkl'))
+            print(f'Found saved file at {os.path.join(output,"graph.pkl")}')
             return G
         except:
             pass
     G=nx.from_pandas_edgelist(edgelist, source='source', target='target', edge_attr='length')
-    nx.set_node_attributes(G, pd.Series(edgelist['color'], index=edgelist['source']).to_dict(), 'group')
-    if output: pickle.dump(G, open(output+'.pkl', "wb"))
+    if 'color' in list(edgelist.columns):
+        nx.set_node_attributes(G, pd.Series(edgelist['color'], index=edgelist['source']).to_dict(), 'group')
+    if output:
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output,'graph.pkl'), 'wb') as f:
+            pickle.dump(G, f)
     return G
 
 def convert_to_edgelist(graph):
+    """Convert a NetworkX graph to a dataframe edgelist
+    
+    Keyword arguments:
+        graph -- (object) a NetworkX graph object
+    
+    Returns: A dataframe edgelist
+    """
     return nx.to_pandas_edgelist(graph)
 
 def simplifyGraph(G, output=False):
-# Loop over the graph until all nodes of degree 2 have been removed and their incident edges fused
-# Source: https://stackoverflow.com/questions/53353335/networkx-remove-node-and-reconnect-edges
-# Thank you mjkvaak, louis_guitton, and sauce_interstellaire
+    """Loop over the graph until all nodes of degree 2 have been removed and their incident edges fused
+    
+    Source: https://stackoverflow.com/questions/53353335/networkx-remove-node-and-reconnect-edges
+    Authors: mjkvaak, louis_guitton, and sauce_interstellaire
+    
+    Keyword arguments:
+        G -- (object) a NetworkX graph object
+        
+    Returns: a NetworkX graph object
+    """
     
     if output:
         try:
-            g = pd.read_pickle(output+'.pkl')
+            try: os.makedirs(output)
+            except: pass
+            g = pd.read_pickle(os.path.join(output,'simplified_graph.pkl'))
             print(f'Found saved file at {output}.pkl')
             return g
         except:
@@ -103,17 +192,31 @@ def simplifyGraph(G, output=False):
                 g0.remove_node(node)
                 g0.add_edge(e0, e1, length=attr0['length']+attr1['length'])
         g = g0
-    if output: pickle.dump(g, open(output+'.pkl', "wb"))
+    if output:
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output,'simplified_graph.pkl'), 'wb') as f:
+            pickle.dump(g, f)
     return g
 
 def get_2d_positions(G, edgelist, layout=nx.kamada_kawai_layout, output=False):
+    """Obtain 2D positioning information based on a NetworkX layout algorithm
+    
+    Keyword arguments:
+        G -- a NetworkX graph object
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        layout -- (object) the NetworkX graph layout algorithm to use (default: nx.kamada_kawai_layout)
+        output -- (str or path) (optional) where to cache
+    
+    Returns: Tuple of dictionaries (edges, nodes)
+    """
     
     if output:
         try:
-            edges = pd.read_pickle(output+'_edges.pkl')
-            print(f'Found saved file at {output}_edges.pkl')
-            nodes = pd.read_pickle(output+'_nodes.pkl')
-            print(f'Found saved file at {output}_nodes.pkl')
+            edges = pd.read_pickle(os.path.join(output,'edges.pkl'))
+            print(f'Found saved file at {os.path.join(output,"edges.pkl")}')
+            nodes = pd.read_pickle(os.path.join(output,'nodes.pkl'))
+            print(f'Found saved file at {os.path.join(output,"nodes.pkl")}')
             return edges, nodes
         except:
             pass
@@ -152,22 +255,42 @@ def get_2d_positions(G, edgelist, layout=nx.kamada_kawai_layout, output=False):
             x, y = pos[node]
             node_x.append(x)
             node_y.append(y)
-            node_groups.append(edgelist.loc[edgelist['source']==node]['color'].item())
+            try:
+                node_groups.append(edgelist.loc[edgelist['source']==node]['color'].item())
+            except:
+                pass
 
     # Bundle it all up in a dict:
     nodes = dict(
         x=node_x,
         y=node_y,
         z=[0]*len(node_x),
-        name=node_name,
-        groups=node_groups
+        name=node_name
     )
+    if len(node_groups) == len(node_x) == len(node_y):
+        nodes['groups'] = node_groups
     if output:
-        pickle.dump(edges, open(output+'_edges.pkl', "wb"))
-        pickle.dump(nodes, open(output+'_nodes.pkl', "wb"))
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output, 'edges.pkl'), 'wb') as f:
+            pickle.dump(edges, f)
+        with open(os.path.join(output, 'nodes.pkl'), 'wb') as f:
+            pickle.dump(nodes, f)
     return edges, nodes
 
 def get_2d_traces(G, edgelist, nodeColor=None, edgeColor=None, nodesize=1, layout=nx.kamada_kawai_layout):
+    """Obtain traces for plotting 2D positions in Plotly on a NetworkX layout algorithm
+    
+    Keyword arguments:
+        G -- a NetworkX graph object
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        nodeColor -- (str) the color of the nodes, e.g. 'red'
+        edgeColor -- (str) the color of the edges, e.g. 'blue'
+        nodeSize -- (int) 
+        layout -- (object) the NetworkX graph layout algorithm to use (default: nx.kamada_kawai_layout)
+    
+    Returns: Tuple of dictionaries (edge_trace, node_trace)
+    """
     
     edges, nodes = get_2d_positions(G, edgelist, layout=nx.kamada_kawai_layout)
 
@@ -202,6 +325,18 @@ def get_2d_traces(G, edgelist, nodeColor=None, edgeColor=None, nodesize=1, layou
     return edge_trace, node_trace
 
 def get_3d_traces(G, edgelist, nodeColor=None, edgeColor=None, colorScale='Viridis', nodeSize=1):
+    """Generate 3D traces for Plotly Graphs
+    
+    Keyword arguments:
+        G -- a NetworkX graph object
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        nodeColor -- (str) the color of the nodes, e.g. 'red'
+        edgeColor -- (str) the color of the edges, e.g. 'blue'
+        colorScale -- (str) the color scale to use for groups, if present
+        nodeSize -- (int) 
+    
+    Returns: Tuple of dictionaries (edges, nodes)
+    """
     edge_x = []
     edge_y = []
     edge_z = []
@@ -210,7 +345,7 @@ def get_3d_traces(G, edgelist, nodeColor=None, edgeColor=None, colorScale='Virid
     for edge in G.edges():
 
         if ((edge[0] in list(edgelist['source'])) & (edge[1] in list(edgelist['source']))):
-            
+
             x0, y0, z0 = edgelist.loc[edgelist['source']==edge[0]]['x'].item(), \
             edgelist.loc[edgelist['source']==edge[0]]['y'].item(), \
             edgelist.loc[edgelist['source']==edge[0]]['z'].item()
@@ -218,8 +353,6 @@ def get_3d_traces(G, edgelist, nodeColor=None, edgeColor=None, colorScale='Virid
             x1, y1, z1 = edgelist.loc[edgelist['source']==edge[1]]['x'].item(), \
             edgelist.loc[edgelist['source']==edge[1]]['y'].item(), \
             edgelist.loc[edgelist['source']==edge[1]]['z'].item()
-
-            group = edgelist.loc[edgelist['source']==edge[0]]['color'].item()
             edge_x.append(x0)
             edge_x.append(x1)
             edge_x.append(None)
@@ -229,7 +362,6 @@ def get_3d_traces(G, edgelist, nodeColor=None, edgeColor=None, colorScale='Virid
             edge_z.append(z0)
             edge_z.append(z1)
             edge_z.append(None)
-            edge_group.append(group)
 
     node_x = []
     node_y = []
@@ -277,7 +409,15 @@ def get_3d_traces(G, edgelist, nodeColor=None, edgeColor=None, colorScale='Virid
     return edge_trace, node_trace
 
 def draw_graph(traces, title='Network Graph', output=False):
-
+    """Generate a graph from traces
+    
+    Keyword arguments:
+        traces -- (tuple, array) a tuple or list of traces
+        title -- (str) the title of the graph
+        output -- (str or path) where to export graph
+    
+    Returns: A Plotly figure object
+    """
     fig = go.Figure(data=traces,
              layout=go.Layout(
                  template='plotly_white',
@@ -291,13 +431,24 @@ def draw_graph(traces, title='Network Graph', output=False):
                 yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                 )
     if output:
-        fig.write_html(output+'.html')
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output,'graph.html'))
     return fig
 
 def build_compound_graph(file, path=None, output=False):
+    """Generate a compound graph (showing simple vs. complete morphology) from a file
+    
+    Keyword arguments:
+        file -- (str) the filename
+        path -- (str or path) (optional) where to search for the file; if blank, use location specified in .env
+        output -- (str or path) where to export graph
+    
+    Returns: A Plotly figure object
+    """
     if (path==None):
         config = dotenv_values(".env")
-        path = config['SWC_SAVE']
+        path = Path(config['SWC_SAVE'])
     edgelist = get_edgelist(file, path)
     g = generate_graph(edgelist)
     sparse = simplifyGraph(g)
@@ -308,26 +459,46 @@ def build_compound_graph(file, path=None, output=False):
     traces.extend(sparse_traces)
     fig = draw_graph(traces, title=file)
     if output:
-        fig.write_html(output+'.html')
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output,'compound_graph.html'))
     return fig
 
 def build_grouped_graph(file, path=None, output=False):
+    """Generate a grouped graph (showing simple vs. complete morphology) from a file
+    
+    Keyword arguments:
+        file -- (str) the filename
+        path -- (str or path) (optional) where to search for the file; if blank, use location specified in .env
+        output -- (str or path) where to export graph
+    
+    Returns: A Plotly figure object
+    """
     if (path==None):
         config = dotenv_values(".env")
-        path = config['SWC_SAVE']
+        path = Path(config['SWC_SAVE'])
     edgelist = get_edgelist(file, path)
     g = generate_graph(edgelist)
     sparse = simplifyGraph(g)
     traces = get_3d_traces(sparse, edgelist, edgeColor='gray', nodeSize=5)
     fig=draw_graph(traces, title=file)
     if output:
-        fig.write_html(output+'.html')
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output,'grouped_graph.html'))
     return fig
 
 def build_comparison_dashboard(path=None):
+    """Start a development server with a dashboard app showing the compound versus grouped graph for all morphology files in the specified path
+    
+    Keyword arguments:
+        path -- (str or path) (optional) where to search for the file; if blank, use location specified in .env
+    
+    Returns: A Plotly figure object
+    """
     if (path==None):
         config = dotenv_values(".env")
-        path = config['SWC_SAVE']
+        path = Path(config['SWC_SAVE'])
     files = get_files(path)
     app = dash.Dash(__name__)
     app.layout = html.Div([
@@ -358,63 +529,109 @@ def build_comparison_dashboard(path=None):
     app.run_server(debug=True, port=7770, threaded=True, use_reloader=False)
 
 def normalize_series(series):
+    """Apply linear algebra to normalize a series
+    
+    Keyword arguments:
+        series -- (array) the series of numbers to normalize
+    
+    Returns: an array of normalized numbers
+    """
     norm1 = series / np.linalg.norm(series)
     norm2 = normalize(series[:,np.newaxis], axis=0).ravel()
     return norm2
 
 def reimport_newXYZ(edgelist, G, layout=nx.kamada_kawai_layout, z=0.5, output=False):
-    if output:
-        try:
-            edgelist = pd.read_csv(output+'.csv')
-            return edgelist
-        except:
-            pass
+    """Convert to 2D, then generate an edgelist in 3D with Z-values set to a static number 
+    
+    Keyword arguments:
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        G -- (object) a NetworkX graph object
+        layout -- (object) the NetworkX graph layout algorithm to use (default: nx.kamada_kawai_layout)
+        z -- (int) the static value of the 2D Z-values (default: 0.5)
+        output -- (str or path) (optional) where to cache
+        
+    Returns: a dataframe of edges with _real and _abstract (X, Y, Z) values
+    """
     new_edges, new_nodes = get_2d_positions(G, edgelist, layout=layout)
     newnodeDF = pd.DataFrame(new_nodes)
     newnodeDF['z']=z
-    edgelist = edgelist.merge(newnodeDF, left_on='source', right_on='name', suffixes=('_real', '_abstract'))
-    if output: edgelist.to_csv(output+'.csv', index=False)
-    return edgelist
-
-def generate_inter_edgelist(sourceEdgelist, nsteps=50, output=False):
+    extended_edgelist = edgelist.merge(newnodeDF, left_on='source', right_on='name', suffixes=('_real', '_abstract'))
+    
     if output:
-        try:
-            interEdges = pd.read_pickle(output+'.pkl')
-            print(f'Found saved file at {output}.pkl')
-            return interEdges
-        except:
-            pass
+        try: os.makedirs(output)
+        except: pass
+        extended_edgelist.to_csv(os.path.join(output, 'extended_edgelist.csv'), index=False)
+    return extended_edgelist
+
+def generate_inter_edgelist(sourceEdgelist, nsteps=100, output=False):
+    """Generate an array of dataframes for each step of the animation
+    
+    Keyword arguments:
+        sourceEdgelist -- (dataframe)  the extracted edgelist containing real *and* abstract X,Y,Z locations
+        nsteps -- (int) the number of steps for linear interpolation
+        output -- (str or path) (optional) where to cache
+        
+    Returns: an array of dataframes
+    """
     interEdges = []
     for i in np.arange(1,nsteps):
         intermediary_edgelist = sourceEdgelist.copy()
         intermediary_edgelist['inter_x'] = intermediary_edgelist['x_real'] + (((intermediary_edgelist['x_abstract']-intermediary_edgelist['x_real'])/nsteps)*i)
-        intermediary_edgelist['inter_y'] = intermediary_edgelist['y_real'] + (((intermediary_edgelist['y_abstract']-intermediary_edgelist['y_real'])/nsteps)*i)
+        intermediary_edgelist['inter_y'] = intermediary_edgelist['y_real'] +(((intermediary_edgelist['y_abstract']-intermediary_edgelist['y_real'])/nsteps)*i)
         intermediary_edgelist['inter_z'] = intermediary_edgelist['z_real'] + (((intermediary_edgelist['z_abstract']-intermediary_edgelist['z_real'])/nsteps)*i)
         intermediary_edgelist.rename(columns={'inter_x':'x', 'inter_y':'y', 'inter_z':'z'}, inplace=True)
         interEdges.append(intermediary_edgelist)
-    if output: pickle.dump(interEdges, open(output+'.pkl', "wb"))
+    if output:
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output, 'animation_edgeframes.pkl'), 'wb') as f:
+            pickle.dump(interEdges, f)
+        
     return interEdges
 
-def build_animation(file=None, G=None, edgelist=None, real_edgelist=None, abstract_edgelist=None, interEdges=None, layout=nx.kamada_kawai_layout, output=False):
+def extract_real_abstract(G, edgelist, layout=nx.kamada_kawai_layout, output=False):
+    """A wrapper for reimport_XYZ; gather dataframes for real, abstract, and all positions
     
-    if (G==None) and (edgelist==None):
-        if file is None:
-            raise FileNotFoundError('You must supply either a graph object, edgelist, or filename!')
-        else:
-            edgelist = get_edgelist(file,output=(output+'/animation_original_edgelist' if output else False))
-            G = generate_graph(edgelist,output=(output+'/animation_graph' if output else False))
-        
-    edgelist = convert_to_edgelist(G)
-    newedgelist = reimport_newXYZ(edgelist, G, layout=layout, output=(output+'/animation_full_edgelist' if output else False))
+    Keyword arguments:
+        G -- a NetworkX graph object
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        layout -- (object) the NetworkX graph layout algorithm to use (default: nx.kamada_kawai_layout)
+        output -- (str or path) (optional) where to cache
     
-    if (real_edgelist==None) or (abstract_edgelist==None):
-        abstract_edgelist = newedgelist.copy()
-        abstract_edgelist.rename(columns={'x_abstract':'x', 'y_abstract':'y', 'z_abstract':'z'}, inplace=True)
-        real_edgelist = newedgelist.copy()
-        real_edgelist.rename(columns={'x_real':'x', 'y_real':'y', 'z_real':'z'}, inplace=True)
+    Returns: three dataframes -- real_edgelist, abstract_edgelist, extended_edgelist
+    """
     
-    if interEdges==None:
-        interEdges = generate_inter_edgelist(newedgelist, nsteps=5, output=(output+'/animation_interedges' if output else False))
+    extended_edgelist = reimport_newXYZ(edgelist, G, layout=layout)
+    
+    abstract_edgelist = extended_edgelist.copy()
+    abstract_edgelist.rename(columns={'x_abstract':'x', 'y_abstract':'y', 'z_abstract':'z'}, inplace=True)
+    
+    real_edgelist = extended_edgelist.copy()
+    real_edgelist.rename(columns={'x_real':'x', 'y_real':'y', 'z_real':'z'}, inplace=True)
+
+    if output:
+        try: os.makedirs(output)
+        except: pass
+        real_edgelist.to_csv(os.path.join(output, 'real_edgelist.csv'), index=False)
+        abstract_edgelist.to_csv(os.path.join(output, 'abstract_edgelist.csv'), index=False)
+
+    return real_edgelist, abstract_edgelist, extended_edgelist
+
+def build_animation(G, edgelist, layout=nx.kamada_kawai_layout, output=False):
+    """Build the plotly animation for interpolating between 2D and 3D
+    
+    
+    Keyword arguments:
+        G -- a NetworkX graph object
+        edgelist -- (dataframe) the extracted edgelist containing information about edges
+        layout -- (object) the NetworkX graph layout algorithm to use (default: nx.kamada_kawai_layout)
+        output -- (str or path) (optional) where to cache
+    
+    Returns: A Plotly figure object
+    """
+    real_edgelist, abstract_edgelist, extended_edgelist = extract_real_abstract(G, edgelist, layout=layout, output=output)
+    
+    interEdges = generate_inter_edgelist(extended_edgelist, output=os.path.join(output,'animation_interedges') if output else False)
     
     sliders_dict = {
         "active": 0,
@@ -426,7 +643,7 @@ def build_animation(file=None, G=None, edgelist=None, real_edgelist=None, abstra
             "visible": True,
             "xanchor": "right"
         },
-        "transition": {"duration": 300, "easing": "cubic-in-out"},
+        "transition": {"duration": 100, "easing": "cubic-in-out"},
         "pad": {"b": 10, "t": 50},
         "len": 0.9,
         "x": 0.1,
@@ -442,9 +659,9 @@ def build_animation(file=None, G=None, edgelist=None, real_edgelist=None, abstra
         frames.append(frame)
         slider_step = {"args": [
             [i],
-            {"frame": {"duration": 300, "redraw": True},
+            {"frame": {"duration": 100, "redraw": True},
              "mode": "immediate",
-             "transition": {"duration": 300}}
+             "transition": {"duration": 100}}
         ],
             "label": i,
             "method": "animate"}
@@ -470,8 +687,8 @@ def build_animation(file=None, G=None, edgelist=None, real_edgelist=None, abstra
                     updatemenus=[{
                         "buttons": [
                             {
-                                "args": [None, {"frame": {"duration": 500, "redraw": True},
-                                                "fromcurrent": True, "transition": {"duration": 300,
+                                "args": [None, {"frame": {"duration": 100, "redraw": True},
+                                                "fromcurrent": True, "transition": {"duration": 100,
                                                                                     "easing": "quadratic-in-out"}}],
                                 "label": "Play",
                                 "method": "animate"
@@ -496,5 +713,10 @@ def build_animation(file=None, G=None, edgelist=None, real_edgelist=None, abstra
                     sliders=[sliders_dict]
                 )
 
+    if output:
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output, 'animation.html'))
+        plt.savefig(os.path.join(output, 'animation.png'))
     fig.show()
     return fig

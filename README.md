@@ -86,7 +86,7 @@ download.download_zip(
 The ArterialVis imaging and segmentation workflow is designed to use DICOM images. By convention, DICOM images are stored in directories, where each sequentially enumerated image corresponds to an adjacent slice in the brain. ArterialVis reads DICOM images into 3D arrays, wherein the first level of the array corresponds to each slice, and the subsequent two levels correspond to the X and Y coordinates of each image.
 
 ### Running the Notebook
-Ensuring your `arterialenv` environment is active, start Jupyter Notebooks with `jupyter notebook`. Step through each cell to view outputs.
+Ensuring your `arterialenv` environment is active, start Jupyter Notebooks with `jupyter notebook`. Step through each cell in `segmentation.ipynb` to view outputs.
 
 ### Module Structure
 All image processing and segmentation functions are stored in `arterialvis/imaging.py` and can be imported using `from arterialvis import imaging` to use the function call format `imaging.<FUNCTION>()` or `from arterialvis.imaging import *` to import all functions and simply use the function call format `<FUNCTION>()`.
