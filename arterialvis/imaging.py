@@ -48,7 +48,6 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 from sklearn.cluster import KMeans
 import cv2
-import ipyvolume as ipv
 
 def parse_volumes(dicom_path=None, debug=True):
     """Extract all volumes from the selected DICOM directory and return the file paths
@@ -95,26 +94,6 @@ def find_largest_volume(dicom_path=None, debug=True):
     name = list(volumes[volumes["count"] == volumes["count"].max()].index)[0]
     return path, name
 
-def make_output_dir(name):
-    """Create an output directory called 'output' and a subdirectory with the name specified
-    
-    Keyword arguments:
-        name -- the name of the subdirectory to create in 'output/'
-    
-    Returns: Path of output directory
-    """
-    try:
-        os.mkdir('output')
-    except:
-        print('output directory already exists')
-    try:
-        outputdir = f'output/{name}'
-        os.mkdir(outputdir)
-        print(f'Created an output directory at {outputdir}')
-    except:
-        print(f'{outputdir} directory already exists')
-    return outputdir
-
 
 def load_scan(path):
     """Load DICOM data from a local directory.
@@ -124,7 +103,7 @@ def load_scan(path):
         
     Returns: 3D pixel array of DICOM slices
     """
-    slices = [pydicom.dcmread(path + '/' + s) for s in               
+    slices = [pydicom.dcmread(os.path.join(path,s)) for s in               
               os.listdir(path)]
     slices = [s for s in slices if 'SliceLocation' in s]
     slices.sort(key = lambda x: int(x.InstanceNumber))
@@ -169,8 +148,12 @@ def show_scan(pixels, viewer='plotly', output=False):
                         colorscale = 'gray'),
     )
     if output:
-        fig.write_html(output+'.html')
-        plt.imsave(output+'.png', pixels[midbrain], cmap=plt.cm.binary)
+        head, tail = os.path.split(output)
+        htmlsavepath = os.path.join(head, tail+'.html')
+        fig.write_html(htmlsavepath)
+        
+        pngsavepath = os.path.join(head, tail+'.png')
+        plt.imsave(pngsavepath, pixels[midbrain], cmap=plt.cm.binary)
     if viewer.lower() =='plotly':
         fig.show()
         plt.ioff()
@@ -190,7 +173,7 @@ def extract_pixels(path, debug=True):
     dicom = load_scan(path)
     pixels = get_pixels_hu(dicom)
     if debug==True: # If debugging, show the image
-        show_scan(pixels, output=path+'_extract-pixels')
+        show_scan(pixels, output=path)
     return pixels
 
 
@@ -207,7 +190,10 @@ def flatten(pixels, output=False, min_filter=-1024):
     flatten_list = list(chain.from_iterable(chain.from_iterable(pixels)))
     result = [x for x in flatten_list if x > min_filter]
     if output:
-        pickle.dump(result, open(output+'.pkl', "wb"))
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output, f'flattened.pkl'), 'wb') as f:
+            pickle.dump(result, f)
     return result
 
 def flat_wrapper(pixels, output=False):
@@ -222,7 +208,7 @@ def flat_wrapper(pixels, output=False):
     """
     if output:
         try:
-            flat = pd.read_pickle(output+'.pkl')
+            flat = pd.read_pickle(os.path.join(output, f'flattened.pkl'))
             return flat
         except:
             pass
@@ -243,8 +229,10 @@ def show_dist(flat, viewer='plotly', output=False):
     plt.clf()
     plt.hist(flat, 100, facecolor='blue', alpha=0.5) 
     if output:
-        fig.write_html(output+'.html')
-        plt.savefig(output+'.png')
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output,'pixel_distribution.html'))
+        plt.savefig(os.path.join(output,'pixel_distribution.png'))
     if viewer.lower() =='plotly':
         fig.show()
         plt.ioff()
@@ -273,8 +261,10 @@ def show_cluster_dist(df, viewer='plotly', output=False):
         plt.hist(c['x'], 100, facecolor=colors[i], alpha=0.5, label=i)
         i+=1
     if output:
-        fig.write_html(output+'.html')
-        plt.savefig(output+'.png')
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output,'cluster_distribution.html'))
+        plt.savefig(os.path.join(output,'cluster_distribution.png'))
     if viewer.lower()=='plotly':
         fig.show()
         plt.ioff()
@@ -297,7 +287,9 @@ def cluster(flat, k=3, output=None):
     label = km.fit_predict(npArr)
     df = pd.DataFrame(data={'x':flat, 'y':label})
     if output:
-        df.to_csv(output+'.csv', index=False)
+        try: os.makedirs(output)
+        except: pass
+        df.to_csv(os.path.join(output,f'cluster_k{k}.csv'), index=False)
         show_cluster_dist(df, output=output)
     return df
 
@@ -319,7 +311,7 @@ def cluster_wrapper(pixels=False, flat=None, k=3, output=False):
             print('Error! If no flattened array is provided, you must supply a pixels 3D array to flatten')
     if output:
         try:
-            clustered = pd.read_csv(output+'.csv')
+            clustered = pd.read_csv(os.path.join(output,f'cluster_k{k}.csv'))
             return clustered
         except:
             pass
@@ -410,8 +402,10 @@ def compare_scans(baseline, compare, viewer="plotly", output=False):
     axarr[0].imshow(baseline[midbrain], cmap=plt.cm.binary)
     axarr[1].imshow(compare[midbrain], cmap=plt.cm.binary)
     if output:
-        fig.write_html(output+'.html')
-        plt.savefig(output+'.png')
+        try: os.makedirs(output)
+        except: pass
+        fig.write_html(os.path.join(output, 'compare_scans.html'))
+        plt.savefig(os.path.join(output, 'compare_scans.png'))
     if viewer=="plotly":
         fig.show()
         plt.ioff()
@@ -439,7 +433,10 @@ def mask(pixels, HUrange, output=False, debug=True):
             j+=1
         i+=1
     if output:
-        pickle.dump(mask, open(output+'.pkl', "wb"))
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output, f'mask_{HUrange[0]}-{HUrange[1]}.pkl'), 'wb') as f:
+            pickle.dump(mask, f)
     if debug:
         show_scan(mask, output=output)
     return mask
@@ -462,8 +459,8 @@ def mask_wrapper(pixels, output=None, HUrange=None, df=True, debug=True):
         else:
             print('Error! Must supply HUrange OR df')
     try:
-        masked = pd.read_pickle(output+'.pkl')
-    except:   
+        masked = pd.read_pickle(os.path.join(output, f'mask_{HUrange[0]}-{HUrange[1]}.pkl'))
+    except:
         masked = mask(pixels, HUrange, output=output, debug=debug)
     return masked
 
@@ -485,7 +482,10 @@ def binary_mask(pixels, maskRange, output=False, debug=True):
             j+=1
         i+=1
     if output:
-        pickle.dump(mask, open(output+'.pkl', "wb"))
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output, f'binary-mask_{maskRange[0]}-{maskRange[1]}.pkl'), 'wb') as f:
+            pickle.dump(mask,f)
     if debug: compare_scans(pixels, binary, viewer='plotly')
     return binary
 
@@ -504,19 +504,8 @@ def remove_islands(pixels, output=False, k=3):
     opening = cv2.morphologyEx(pixels, cv2.MORPH_OPEN, kernel)
     compare_scans(pixels, opening, viewer='plotly')
     if output:
-        pickle.dump(opening, open(output, "wb"))
+        try: os.makedirs(output)
+        except: pass
+        with open(os.path.join(output, f'remove_islands_k{k}.pkl'), 'wb') as f:
+            pickle.dump(opening, f)
     return opening
-
-def render_volume(pixels):
-    """Render a volume visualization of the 3D numpy array using iPyVolume
-    
-    Keyword arguments:
-        pixels -- 3D numpy array
-        
-    Returns: iPyVolume figure
-    """
-    ipv.figure()
-    ipv.volshow(pixels)
-    #ipv.view(-30, 40)
-    ipv.show()
-    return ipv.figure
