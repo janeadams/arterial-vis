@@ -84,10 +84,7 @@ download.download_zip(
 
 **Note: This portion of the library is incomplete.** Functions exist for reading, clustering, masking, removing islands, and rendering volumes. Because masking and island removal alone are insufficient for acceptable segmentation, functions do not yet exist for centerline extraction and exporting of morphology. Please refer to the following section, "Morphology", for 2D embedding of morphological structures from pre-existing segmented and morphologized data from [BraVa](http://cng.gmu.edu/brava/home.php). You can skip ahead to README instructions for morphology and graphing [here](#graphing).
 
-<iframe 
-  width="660"
-  height="375"
-  src="https://raw.githubusercontent.com/janeadams/arterial-vis/main/documentation/compare_scans_masked.html" </iframe>
+![Masking example](https://github.com/janeadams/arterial-vis/blob/main/documentation/compare_scans_masked.png?raw=true)
 
 ### Data Format
 The ArterialVis imaging and segmentation workflow is designed to use DICOM images. By convention, DICOM images are stored in directories, where each sequentially enumerated image corresponds to an adjacent slice in the brain. ArterialVis reads DICOM images into 3D arrays, wherein the first level of the array corresponds to each slice, and the subsequent two levels correspond to the X and Y coordinates of each image.
@@ -103,8 +100,14 @@ Ultimately, the goal of the ArterialVis imaging and segmentation workflow is to 
 
 ## <a name="morphology"></a>Morphology & Graphing Module
 
+![Morphology comparison example](https://github.com/janeadams/arterial-vis/blob/main/documentation/comparison_dashboard.png?raw=true)
+
 ### Data Format
 The ArterialVis morphology and graphing module takes `*.swc` files as input, and outputs interactive interfaces for exploring 3D morphological structure and animation from 3D spatial positioning to 2D abstracted graph embedding using multiple layout algorithms.
 
 ### Module Structure
 All morphological and graphing functions are stored in `arterialvis/morphology.py` and can be imported using `from arterialvis import morphology` to use the function call format `morphology.<FUNCTION>()` or `from arterialvis.morphology import *` to import all functions and simply use the function call format `<FUNCTION>()`.
+
+![Sparse animation](https://github.com/janeadams/arterial-vis/blob/main/documentation/sparse_animation.gif?raw=true)
+
+![Complete animation](https://github.com/janeadams/arterial-vis/blob/main/documentation/full_graph_animation.gif?raw=true)
