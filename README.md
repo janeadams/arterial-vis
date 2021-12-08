@@ -110,4 +110,6 @@ All morphological and graphing functions are stored in `arterialvis/morphology.p
 
 ![Sparse animation](https://github.com/janeadams/arterial-vis/blob/main/documentation/sparse_animation.gif?raw=true)
 
+We recommend testing all morphological embeddings on sparsified graphs before moving to animation of the complete graph; generating a network layout for the complete vascular tree can take an average of 15 minutes on an ordinary personal computer.
+
 ![Complete animation](https://github.com/janeadams/arterial-vis/blob/main/documentation/full_graph_animation.gif?raw=true)
