@@ -37,6 +37,9 @@ Set up your virtual environment with:
 Activate the environment with:
 `source arterialenv/bin/activate`
 
+Install required packages with:
+`pip install -r requirements.txt`
+
 
 ## Downloading sample data
 
