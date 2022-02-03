@@ -51,6 +51,9 @@ Activate the environment with:
 Install required packages with:
 `pip install -r requirements.txt`
 
+### Run jupyter notebook
+Either by launching from the Anaconda GUI, or running `jupyter notebook` from the command line in the project directory
+
 
 ## Downloading sample data
 
