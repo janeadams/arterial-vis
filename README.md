@@ -23,6 +23,10 @@ Set up your virtual environment with:
 Activate the environment with:
 `conda activate arterialenv`
 
+If you're having trouble viewing your virtual environments, run
+- `conda info --envs` on Linux with conda
+- `lsvirtualenv -l` on Windows
+
 In order to view your virtual environment in Jupyter Notebooks:
 `python -m ipykernel install --user --name arterialenv --display-name "ArterialVis environment"`
 
@@ -35,7 +39,10 @@ Set up your virtual environment with:
 `python -m venv arterialenv`
 
 Activate the environment with:
-`source arterialenv/bin/activate`
+- `activate arterialenv`, or, if this doesn't work, try:
+- `source arterialenv/bin/activate` on Linux machines
+- `venv\Scripts\activate arterialenv` on Windows machines
+- `. .\arterialenv\Scripts\activate.ps1` in PowerShell
 
 Install required packages with:
 `pip install -r requirements.txt`
