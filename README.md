@@ -18,6 +18,9 @@ We recommend using a virtual environment to keep packages organized. There are t
 Set up your virtual environment with:
 `conda create --name arterialenv -f environment.yml python=3.8.3`
 
+If you run into issues with the `environment.yml` file, try just running `conda create --name arterialenv python=3.8.3`
+and then use pip to install requirements with `pip install -r requirements.txt`
+
 **Note:** *There is a known issue with iPyVolume in Python 3.10; we are using Python 3.8.3 because it appears to be stable.*
 
 Activate the environment with:
