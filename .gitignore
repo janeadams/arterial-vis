@@ -1,3 +1,10 @@
+.idea/
+*.stl
+*.obj
+*.mtl
+*.mov
+Untitled*
+CTA/
 output/
 dicom_files/
 swc_files/

@@ -576,9 +576,14 @@ def generate_inter_edgelist(sourceEdgelist, nsteps=100, output=False):
     interEdges = []
     for i in np.arange(1,nsteps):
         intermediary_edgelist = sourceEdgelist.copy()
-        intermediary_edgelist['inter_x'] = intermediary_edgelist['x_real'] + (((intermediary_edgelist['x_abstract']-intermediary_edgelist['x_real'])/nsteps)*i)
-        intermediary_edgelist['inter_y'] = intermediary_edgelist['y_real'] +(((intermediary_edgelist['y_abstract']-intermediary_edgelist['y_real'])/nsteps)*i)
-        intermediary_edgelist['inter_z'] = intermediary_edgelist['z_real'] + (((intermediary_edgelist['z_abstract']-intermediary_edgelist['z_real'])/nsteps)*i)
+        
+        
+        # Real + ( ( Real - Abstract ) / StepN ) * i
+        
+        
+        intermediary_edgelist['inter_x'] = intermediary_edgelist['x_real'] + (((intermediary_edgelist['x_real']-intermediary_edgelist['x_abstract'])/nsteps)*(i))
+        intermediary_edgelist['inter_y'] = intermediary_edgelist['y_real'] +(((intermediary_edgelist['y_real']-intermediary_edgelist['y_abstract'])/nsteps)*(i))
+        intermediary_edgelist['inter_z'] = intermediary_edgelist['z_real'] + (((intermediary_edgelist['z_real']-intermediary_edgelist['z_abstract'])/nsteps)*(i))
         intermediary_edgelist.rename(columns={'inter_x':'x', 'inter_y':'y', 'inter_z':'z'}, inplace=True)
         interEdges.append(intermediary_edgelist)
     if output:
