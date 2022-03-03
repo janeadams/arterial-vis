@@ -14,14 +14,22 @@ Please note that at any time, you can access module and function descriptions by
 We recommend using a virtual environment to keep packages organized. There are two recommended ways to do this from the command line; either using `conda` or `venv` and `pip`:
 
 ### Setting up a virtual environment with `conda`
+(if using Windows, ensure these commands are run in conda shell, not PowerShell)
 
 Set up your virtual environment with:
 `conda create --name arterialenv -f environment.yml python=3.8.3`
+
+If you run into issues with the `environment.yml` file, you may need to use pip:
+try just running `conda create --name arterialenv python=3.8.3` and then use pip to install requirements with `pip install -r requirements.txt`
 
 **Note:** *There is a known issue with iPyVolume in Python 3.10; we are using Python 3.8.3 because it appears to be stable.*
 
 Activate the environment with:
 `conda activate arterialenv`
+
+If you're having trouble viewing your virtual environments, run
+- `conda info --envs` on Linux with conda
+- `lsvirtualenv -l` on Windows
 
 In order to view your virtual environment in Jupyter Notebooks:
 `python -m ipykernel install --user --name arterialenv --display-name "ArterialVis environment"`
@@ -35,7 +43,16 @@ Set up your virtual environment with:
 `python -m venv arterialenv`
 
 Activate the environment with:
-`source arterialenv/bin/activate`
+- `activate arterialenv`, or, if this doesn't work, try:
+- `source arterialenv/bin/activate` on Linux machines
+- `venv\Scripts\activate arterialenv` on Windows machines
+- `. .\arterialenv\Scripts\activate.ps1` in PowerShell
+
+Install required packages with:
+`pip install -r requirements.txt`
+
+### Run jupyter notebook
+Either by launching from the Anaconda GUI, or running `jupyter notebook` from the command line in the project directory
 
 
 ## Downloading sample data
@@ -109,5 +126,7 @@ The ArterialVis morphology and graphing module takes `*.swc` files as input, and
 All morphological and graphing functions are stored in `arterialvis/morphology.py` and can be imported using `from arterialvis import morphology` to use the function call format `morphology.<FUNCTION>()` or `from arterialvis.morphology import *` to import all functions and simply use the function call format `<FUNCTION>()`.
 
 ![Sparse animation](https://github.com/janeadams/arterial-vis/blob/main/documentation/sparse_animation.gif?raw=true)
+
+We recommend testing all morphological embeddings on sparsified graphs before moving to animation of the complete graph; generating a network layout for the complete vascular tree can take an average of 15 minutes on an ordinary personal computer.
 
 ![Complete animation](https://github.com/janeadams/arterial-vis/blob/main/documentation/full_graph_animation.gif?raw=true)

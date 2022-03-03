@@ -88,4 +88,3 @@ dependencies:
     - wcwidth==0.2.5
     - werkzeug==2.0.2
     - zipp==3.6.0
-prefix: /Users/janeadams/opt/anaconda3/envs/arterialenv
