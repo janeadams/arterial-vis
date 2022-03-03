@@ -108,7 +108,7 @@ def make_output_dir(name):
     
     Returns: Path of output directory
     """
-    print(f'Absolute path: {os.path.abspath(os.curdir)}')
+    #print(f'Absolute path: {os.path.abspath(os.curdir)}')
     try:
         os.mkdir('output')
     except:
