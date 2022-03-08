@@ -16,3 +16,14 @@ swc_files/
 .ipynb_checkpoints
 __pycache__
 *.pyc
+env/
+env-work/
+env-home/
+env-mobile/
+venv/
+ENV/
+env.bak/
+venv.bak/
+env-work.bak/
+env-home.bak/
+env-mobile.bak/
