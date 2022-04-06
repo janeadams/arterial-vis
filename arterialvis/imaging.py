@@ -85,7 +85,7 @@ def find_largest_volume(dicom_path=None, debug=True):
     """Find the volume with the greatest number of slices (for demonstration)
     
     Keyword arguments:
-        path -- the directory where *ALL* the DICOM (.dcm) images are located
+        dicom_path -- the directory where *ALL* the DICOM (.dcm) images are located
     
     Returns: Tuple of (path, name) of first largest volume in the dicom path
     """
